@@ -22,14 +22,7 @@ jobs:
         run: |
           pacman -Syu --noconfirm git pacman-contrib
 
-      - name: Setup Unprivileged Build User
-        run: |
-          useradd -m builder
-          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-          chown -R builder:builder /__w/zenarchy-repo/zenarchy-repo
-
       - name: Build Packages
-        user: builder
         run: |
           cd pkgs
           for pkg in */; do
