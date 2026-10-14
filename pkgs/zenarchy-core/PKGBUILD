@@ -1,0 +1,31 @@
+# Maintainer: fengor <fengor@fengors-realm.de>
+pkgname=zenarchy-core
+pkgver=0.1
+pkgrel=1
+pkgdesc="An opinionated Arch preset"
+arch=('x86_64')
+url="https://github.com/fengor/zenarchy-core"
+license=('MIT')
+
+depends=(
+  # --- Core Desktop & WM ---
+  'sway' 'waybar' 'mako' 'wofi' 'swayimg' 'foot' 'swayidle' 'swaylock-effects' 'sway-contrib'
+  
+  # --- System "Glue" & Services ---
+  'pipewire' 'wireplumber' 'pipewire-pulse' 
+  'bluez' 'bluez-utils' 'blueman' 'blueberry'
+  'brightnessctl' 'hyprpolkitagent' 'wl-clipboard'
+  'network-manager-applet' 'gvfs-mtp' 
+  
+  'satty'
+  
+  # --- GUI Applications ---
+  'qutebrowser' 'vivaldi' 'keepassxc' 'obsidian' 
+  'mpv' 
+  
+  # --- Nerdfonts ---
+  'otf-geist-mono-nerd'
+  'ttf-anonymouspro-nerd'
+  'ttf-iosevka-nerd'
+  'ttf-jetbrains-mono-nerd'
+)
