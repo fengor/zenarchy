@@ -1,0 +1,69 @@
+name: Build Packages and Publish Documentation
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Initialize Pacman & Install Build Tools
+        run: |
+          pacman -Syu --noconfirm git pacman-contrib
+
+      - name: Setup Unprivileged Build User
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          chown -R builder:builder /__w/zenarchy-repo/zenarchy-repo
+
+      - name: Build Packages
+        user: builder
+        run: |
+          cd pkgs
+          for pkg in */; do
+            echo "Building package: $pkg"
+            cd "$pkg"
+            makepkg -s --noconfirm --skippgpcheck
+            mv *.pkg.tar.zst ../../output/
+            cd ..
+          done
+
+      - name: Create Pacman Repository Database
+        run: |
+          mkdir -p output/x86_64
+          cd output
+          mv *.pkg.tar.zst x86_64/ || true
+          cd x86_64
+          repo-add zenarchy.db.tar.gz *.pkg.tar.zst
+
+      - name: Copy Documentation to Output Root
+        run: |
+          # Copy your markdown documentation into the root of the site output
+          mkdir -p output/docs
+          cp -r ../docs/* output/docs/
+          # Create a clean landing page redirect or copy README to index
+          cp ../README.md output/index.md
+
+      - name: Upload Artifacts for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output
+
+  deploy:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
