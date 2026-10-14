@@ -1,0 +1,23 @@
+# Maintainer: fengor <fengor@fengors-realm.de>
+pkgname=zenarchy-base
+pkgver=0.1
+pkgrel=1
+pkgdesc="system hardening and commandline utils"
+arch=('x86_64')
+url="https://github.com/fengor/zenarchy"
+license=('MIT')
+
+depends=(
+  # dotfile management
+  'git' 'stow'
+
+  # --- CLI Power Tools ---
+  'neovim' 'tmux' 'zsh' 'btop'
+  'fd' 'ripgrep' 'p7zip' 'unzip'
+  'fzf' 'zoxide' 'eza'
+  
+  
+  # --- Security ---
+  'yubikey-manager' 'libfido2' 'pam-u2f'
+  'firewalld'
+)
