@@ -24,6 +24,7 @@ jobs:
 
       - name: Setup Unprivileged Build User
         run: |
+          mkdir -p output/x86_64
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           chown -R builder:builder /__w/zenarchy/zenarchy
@@ -34,17 +35,14 @@ jobs:
           for pkg in */; do
             echo "Building package: $pkg"
             cd "$pkg"
-            sudo -u builder makepkg -s --noconfirm --skippgpcheck
-            mv *.pkg.tar.zst ../../output/
+            sudo -u builder makepkg -s -d --noconfirm --skippgpcheck
+            mv *.pkg.tar.zst ../../output/x86_64/
             cd ..
           done
 
       - name: Create Pacman Repository Database
         run: |
-          mkdir -p output/x86_64
-          cd output
-          mv *.pkg.tar.zst x86_64/ || true
-          cd x86_64
+          cd output/x86_64
           repo-add zenarchy.db.tar.gz *.pkg.tar.zst
 
       - name: Copy Documentation to Output Root
