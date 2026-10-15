@@ -22,13 +22,19 @@ jobs:
         run: |
           pacman -Syu --noconfirm git pacman-contrib
 
+      - name: Setup Unprivileged Build User
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          chown -R builder:builder /__w/zenarchy-repo/zenarchy-repo
+
       - name: Build Packages
         run: |
           cd pkgs
           for pkg in */; do
             echo "Building package: $pkg"
             cd "$pkg"
-            makepkg -s --noconfirm --skippgpcheck
+            sudo -u builder makepkg -s --noconfirm --skippgpcheck
             mv *.pkg.tar.zst ../../output/
             cd ..
           done
