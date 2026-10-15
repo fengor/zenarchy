@@ -49,9 +49,7 @@ jobs:
         run: |
           # Copy your markdown documentation into the root of the site output
           mkdir -p output/docs
-          cp -r ../docs/* output/docs/
-          # Create a clean landing page redirect or copy README to index
-          cp ../README.md output/index.md
+          cp -r docs/* output/
 
       - name: Upload Artifacts for GitHub Pages
         uses: actions/upload-pages-artifact@v3
