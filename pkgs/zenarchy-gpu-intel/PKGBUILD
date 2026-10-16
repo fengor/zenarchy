@@ -1,0 +1,19 @@
+# Maintainer: fengor <fengor@fengors-realm.de>
+pkgname=zenarchy-gpu-intel
+pkgver=0.1
+pkgrel=1
+pkgdesc="system packages to support intel gpu architectures"
+arch=('x86_64')
+url="https://github.com/fengor/zenarchy"
+license=('MIT')
+
+provides=('zenarchy-gpu')
+depends=(
+    'mesa'
+    'vulkan-intel'
+    'vulkan-tools'
+    'intel-gpu-tools'
+    'intel-media-driver'
+    'libva-utils'
+    'libva-intel-driver'
+)

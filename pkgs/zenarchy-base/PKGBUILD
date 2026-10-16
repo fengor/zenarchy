@@ -8,8 +8,12 @@ url="https://github.com/fengor/zenarchy"
 license=('MIT')
 
 depends=(
+  # zenarchy dependencies
+  'zenarchy-cpu'
+  'zenarchy-gpu'
+
   # dotfile management
-  'git' 'stow'
+  'git' 'stow' 'pass'
 
   # --- CLI Power Tools ---
   'neovim' 'tmux' 'zsh' 'btop'
