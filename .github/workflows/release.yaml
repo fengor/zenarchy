@@ -7,10 +7,22 @@ on:
 permissions:
   contents: write
   pages: write
+  pull-requests: write
   id-token: write
 
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: google-github-actions/release-please-action@v4
+
   build-and-deploy:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
     container:
       image: archlinux:base-devel
@@ -57,7 +69,8 @@ jobs:
           path: output
 
   deploy:
-    needs: build-and-deploy
+    needs: [release-please, build-and-deploy]
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages

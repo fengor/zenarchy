@@ -1,6 +1,6 @@
 # Maintainer: fengor <fengor@fengors-realm.de>
 pkgname=zenarchy-core
-pkgver=0.1
+pkgver=0.0.1
 pkgrel=1
 pkgdesc="An opinionated Arch preset"
 arch=('x86_64')
