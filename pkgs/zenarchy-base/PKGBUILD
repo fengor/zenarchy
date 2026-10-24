@@ -13,7 +13,7 @@ depends=(
   'zenarchy-gpu'
 
   # dotfile management
-  'git' 'stow' 'pass'
+  'git' 'stow' 'pass' 'direnv'
 
   # --- CLI Power Tools ---
   'neovim' 'tmux' 'zsh' 'btop'

@@ -8,8 +8,11 @@ url="https://github.com/fengor/zenarchy-core"
 license=('MIT')
 
 depends=(
+  # zenarchy
+  'zenarchy-base'
+
   # --- Core Desktop & WM ---
-  'sway' 'waybar' 'mako' 'wofi' 'swayimg' 'foot' 'swayidle' 'swaylock-effects' 'sway-contrib'
+  'sway' 'waybar' 'mako' 'fuzzel' 'swayimg' 'foot' 'swayidle' 'swaylock-effects' 'sway-contrib'
   
   # --- System "Glue" & Services ---
   'pipewire' 'wireplumber' 'pipewire-pulse' 
@@ -20,7 +23,8 @@ depends=(
   'satty'
   
   # --- GUI Applications ---
-  'qutebrowser' 'vivaldi' 'keepassxc' 'obsidian' 
+  'chromium' 'firefox' 'browserpass-chromium' 'browserpass-firefox' 
+  'keepassxc' 'obsidian' 
   'mpv' 
   
   # --- Nerdfonts ---
