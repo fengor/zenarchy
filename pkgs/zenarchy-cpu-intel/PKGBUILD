@@ -1,6 +1,6 @@
 # Maintainer: fengor <fengor@fengors-realm.de>
 pkgname=zenarchy-cpu-intel
-pkgver=0.1
+pkgver=0.0.1
 pkgrel=1
 pkgdesc="system packages to support intel cpu architectures"
 arch=('x86_64')
