@@ -3,6 +3,8 @@
     ".": {
       "release-type": "simple",
       "extra-files": [
+        "pkgs/zenarchy-cpu-intel/PKGBUILD",
+        "pkgs/zenarchy-gpu-intel/PKGBUILD",
         "pkgs/zenarchy-base/PKGBUILD",
         "pkgs/zenarchy-core/PKGBUILD"
       ]
