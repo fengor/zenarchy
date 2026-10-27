@@ -40,6 +40,10 @@ This projects tries to adress the following components of the IT-Grundschutz
 
 Relevant requirements will be mentioned  where they are addressed. If a requirement is not explicitely mentioned we a re considering it out of scope for this project.
 
+
+
+
+
 ## Assumptions
 
 ### Full-Disk-Encryption is enabled
