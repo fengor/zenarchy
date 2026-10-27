@@ -3,42 +3,38 @@
 ## Threat Model
 Zenarchy utilizes a centralized meta-package architecture to enforce a uniform security baseline and configuration standard across diverse endpoints, including laptops, workstations, and headless servers.
 
-From this follows a set of threats that need to be considered:
+From this architecture follows a specific set of threats:
 
-- Loss or Theft of the physical device
-  Some classes of devices like laptops are more prone to being stolen or lost than others but even workstations and servers can be victim to burglary.
-- Compromise of credentials
-  Credentials, API keys and other secrets are high value targets if an attacker compromises a system.
-- Untrusted network exposure
-  Always assume an attacker can be on the same network as you.
-- Blast radius expansion through uniformity
-  Since we form a baseline configuration a potential attack based on this baseline can affect potentially alll devices using this baseline.
-- Supply Chain attacks
-  The metapackage approach means we will be installing packages from the official repos and Arch User Repository. If an attacker manages to compromises one of the packages we use our devices can be compromised
+- **Loss or Theft of Physical Devices:** Laptops are inherently prone to theft, but workstations and headless servers also remain vulnerable to physical tampering or burglary.
+- **Credential & Secret Compromise:** API keys, tokens, and local secrets become high-value targets if an attacker gains initial system access.
+- **Untrusted Network Exposure:** Environments must assume an active adversary is present on the local network segment.
+- **Fleet-Wide Blast Radius (Uniformity Risk):** Because all devices share a centralized baseline configuration, a single undiscovered design flaw or vulnerability can affect all managed systems simultaneously.
+- **Supply Chain & Pipeline Compromise:** 
+  - *Internal:* Unauthorized modification of Zenarchy's own source repository, build pipelines, or packaging keys.
+  - *External:* Malicious or compromised packages pulled from official repositories or the Arch User Repository (AUR) during deployment.
 
-## Security goals
-
-Our goal is to provide a configuration that balances the user experience with the secuity concerns from which a user can adjust based on their personal threat model.
+## Security Goals
+Zenarchy provides a security configuration that balances usability with defense-in-depth, serving as a baseline that users can adjust to fit their individual threat models.
 
 ## Scope and Non-Goals
+Zenarchy assumes a pre-existing base installation of Arch Linux. Configuration tasks handled during the base installation are out of scope. However, Zenarchy relies on the following mandatory pre-requisites:
 
-Zenarchy needs a baseinstall of archlinux as a requirement. As such everything that is setup during baseinstall is out ofthe scope for zenarchy itself. But we rely on the following assumptions:
+- Full Disk Encryption (FDE) via LUKS is enabled.
+- Secure Boot is enforced.
+- A user account with administrative (`sudo`) privileges exists.
 
-- Full Disk Encryption via LUKS is enabled
-- Secure Boot is used
-- A user with sudo priviliges exists
-
-Zenarchy aims to streamline the setup of a device after a fresh install. Its primary goal is to get a device to a baseline not manage the device. Ongoing device management is out of scope.
+Zenarchy's primary goal is to **streamline initial system provisioning** to a hardened baseline, not to manage day-to-day device operations. Ongoing device management and configuration drift tracking are strictly out of scope.
 
 ## BSI Alignment
+This project aligns technical controls with the BSI IT-Grundschutz Compendium where applicable:
 
-This projects tries to adress the following components of the IT-Grundschutz
+- **SYS.2.1:** General Client (Primary focus for workstations and laptops)
+- **SYS.1.3:** Linux/Unix Server (As applicable to headless nodes)
+- **CON.1:** Cryptography Concept (As applicable to system-wide crypto policies)
 
-- SYS.2.1 General client (primarily)
-- SYS.1.3 Linux/Unix server (as applicable)
-- CON.1 Crypto concept (as applicable)
+Relevant BSI requirements are explicitly referenced where implemented. Requirements not explicitly mentioned are considered out of scope for this project.
 
-Relevant requirements will be mentioned  where they are addressed. If a requirement is not explicitely mentioned we a re considering it out of scope for this project.
+
 
 
 
