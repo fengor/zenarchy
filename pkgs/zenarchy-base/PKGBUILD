@@ -23,5 +23,5 @@ depends=(
   
   # --- Security ---
   'yubikey-manager' 'libfido2' 'pam-u2f'
-  'firewalld'
+  'firewalld' 'libpwquality'
 )

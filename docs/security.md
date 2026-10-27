@@ -17,11 +17,12 @@ From this architecture follows a specific set of threats:
 Zenarchy provides a security configuration that balances usability with defense-in-depth, serving as a baseline that users can adjust to fit their individual threat models.
 
 ## Scope and Non-Goals
-Zenarchy assumes a pre-existing base installation of Arch Linux. Configuration tasks handled during the base installation are out of scope. However, Zenarchy relies on the following mandatory pre-requisites:
+Zenarchy assumes a pre-existing base installation of Arch Linux. Configuration tasks handled during the base installation are out of scope. However, Zenarchys security model relies on the following mandatory pre-requisites:
 
-- Full Disk Encryption (FDE) via LUKS is enabled.
+- Full Disk Encryption (FDE) via LUKS2 is enabled.
 - Secure Boot is enforced.
 - A user account with administrative (`sudo`) privileges exists.
+- A Yubikey will be used for MFA.
 
 Zenarchy's primary goal is to **streamline initial system provisioning** to a hardened baseline, not to manage day-to-day device operations. Ongoing device management and configuration drift tracking are strictly out of scope.
 
@@ -33,6 +34,49 @@ This project aligns technical controls with the BSI IT-Grundschutz Compendium wh
 - **CON.1:** Cryptography Concept (As applicable to system-wide crypto policies)
 
 Relevant BSI requirements are explicitly referenced where implemented. Requirements not explicitly mentioned are considered out of scope for this project.
+
+# Boot and Disk protection
+
+## UEFI and Secure Boot
+
+Zenarchy assumes that the provisioning secured UEFI with a password and enabled secure boot.
+
+- **SYS.2.1.A8:** Securing the boot process
+
+## Full Disk Enccryption with Yubikey
+Provisioning set up full disk encryption with a secure passphrase. This will become the emergency backup unlock option. The main method of unlocking for zenarchy will be utilizing the FIDO2 element of the Yubikey. 
+
+You can enroll the key with the following commeand `sudo systemd-cryptenroll --fido2-device=auto /dev/sdaX`
+
+- **SYS.2.1.A28:** Full disk encryption with yubikey and meergency backup phrase.
+- **SYS.2.1.A37:** Multifactor with Yubikey
+- **CON.1.A2:** Yubikey cryptographic parts cannot be read out.
+
+## Reconvery considerations 
+Store the initial secure passphrase in a secure way like a sealed envelope for emergencies.
+
+- **SYS.2.1.A38:** defines emergency break-glass unlock option
+ 
+# Identity, Authentication and Key Management
+
+## Password Policy
+
+Zenarchy uses `libpwquality` to ensure either passphrases or shorter but complex enough passwords.
+
+## Multifactor Authentication
+
+Yubikeys with support for FIDO2/U2f and PIV/OpenPGP are supported. It is recommended to use them for:
+
+- FDE unlock (via LUKS2 and U2F)
+- User unlock (via libpam and U2F)
+- Credential storage (via pass and OpenPGP)
+- SSH / GPGP / Git commit signing(via OpenPGP)
+
+Secure setup of a yubikey is out of scope of this project. We recommend the following guide: [DrDuh Yubikey Guide](https://github.com/drduh/yubikey-guide)
+
+## User Directories
+
+Zenarchy does not assume central user directories are mandatory. If password delegation to a centralized directory like Entra or Active Directory is needed it needs to be set up in the dedicated zenarchy-profile.
 
 
 
