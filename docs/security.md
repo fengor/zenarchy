@@ -35,79 +35,54 @@ This project aligns technical controls with the BSI IT-Grundschutz Compendium wh
 
 Relevant BSI requirements are explicitly referenced where implemented. Requirements not explicitly mentioned are considered out of scope for this project.
 
-# Boot and Disk protection
+# Boot and Disk Protection
 
 ## UEFI and Secure Boot
+Zenarchy assumes that initial provisioning has secured the UEFI interface with an administrative password and enabled Secure Boot.
 
-Zenarchy assumes that the provisioning secured UEFI with a password and enabled secure boot.
+- **SYS.2.1.A8:** Securing the boot process against unauthorized modifications and unverified boot sources.
 
-- **SYS.2.1.A8:** Securing the boot process
+## Full Disk Encryption with YubiKey
+Initial provisioning establishes Full Disk Encryption (LUKS2) using a secure passphrase, which serves as the emergency backup unlock option. The primary daily unlocking mechanism for Zenarchy leverages the FIDO2 element of a YubiKey.
 
-## Full Disk Enccryption with Yubikey
-Provisioning set up full disk encryption with a secure passphrase. This will become the emergency backup unlock option. The main method of unlocking for zenarchy will be utilizing the FIDO2 element of the Yubikey. 
+Enrollment of the token into the LUKS header is performed via:
+```bash
+sudo systemd-cryptenroll --fido2-device=auto /dev/sdaX
+```
 
-You can enroll the key with the following commeand `sudo systemd-cryptenroll --fido2-device=auto /dev/sdaX`
+- **SYS.2.1.A28:** Full disk encryption with YubiKey and emergency backup passphrase.
+- **SYS.2.1.A37:** Multi-factor authentication integration using hardware tokens.
+- **CON.1.A2:** Secure key generation and storage using tamper-resistant hardware security elements.
 
-- **SYS.2.1.A28:** Full disk encryption with yubikey and meergency backup phrase.
-- **SYS.2.1.A37:** Multifactor with Yubikey
-- **CON.1.A2:** Yubikey cryptographic parts cannot be read out.
+## Recovery Considerations
+Store the initial emergency passphrase physically isolated from the host (e.g., in a tamper-evident sealed envelope inside a safe).
 
-## Reconvery considerations 
-Store the initial secure passphrase in a secure way like a sealed envelope for emergencies.
+- **SYS.2.1.A38:** Definition and management of emergency break-glass recovery options.
+- **CON.1.A2:** Secure physical handling and storage of cryptographic recovery keys.
 
-- **SYS.2.1.A38:** defines emergency break-glass unlock option
- 
-# Identity, Authentication and Key Management
+# Identity, Authentication, and Key Management
 
 ## Password Policy
+Zenarchy deploys `libpwquality (pam_pwquality.so)` to enforce system-wide password rules. The policy dynamically accommodates both long, low-complexity passphrases and shorter, highly complex passwords using credit-based scoring or stacked PAM rules.
 
-Zenarchy uses `libpwquality` to ensure either passphrases or shorter but complex enough passwords.
+- **ORP.4.A8:** Regulation and enforcement of secure password usage across local accounts.
+- **ORP.4.A22:** Compliance with password quality criteria, leveraging hardware MFA compensation to allow reduced password lengths without sacrificing security.
 
-## Multifactor Authentication
+## Multi-Factor Authentication
+YubiKeys supporting FIDO2/CTAP2 and PIV/OpenPGP interfaces are integrated across the operating stack. Recommended usage points include:
 
-Yubikeys with support for FIDO2/U2f and PIV/OpenPGP are supported. It is recommended to use them for:
+- **FDE Volume Unlock:** LUKS2 via `systemd-cryptenroll` (FIDO2)
+- **User Authentication:** PAM stack via `pam_u2f.so` (FIDO2)
+- **Secret & Credential Storage:** `pass` CLI backed by OpenPGP subkeys
+- **Transport & Code Integrity:** SSH authentication and Git commit signing via OpenPGP / PIV smart card applet
 
-- FDE unlock (via LUKS2 and U2F)
-- User unlock (via libpam and U2F)
-- Credential storage (via pass and OpenPGP)
-- SSH / GPGP / Git commit signing(via OpenPGP)
-
-Secure setup of a yubikey is out of scope of this project. We recommend the following guide: [DrDuh Yubikey Guide](https://github.com/drduh/yubikey-guide)
+Note: Initial provisioning and key generation on the YubiKey itself are out of scope for Zenarchy. We recommend following the [DrDuh YubiKey Guide](https://github.com/drduh/yubikey-guide).
 
 ## User Directories
-
-Zenarchy does not assume central user directories are mandatory. If password delegation to a centralized directory like Entra or Active Directory is needed it needs to be set up in the dedicated zenarchy-profile.
-
+Zenarchy does not mandate centralized user directory integration. Where identity delegation to centralized directory services (e.g., Microsoft Entra ID or Active Directory) is required, it must be declared within a dedicated `zenarchy-profile` module.
 
 
-
-
-
-
-## Assumptions
-
-### Full-Disk-Encryption is enabled
-todo: zenarchy is installed after bse install. luks encryption is part of base install and we assume fde was used
-
-### Yubikeys will be used (optional)
-
-## todo chapter title. security concepts? architecture? 
-
-### Yubikey setup
-todo: requirements and minimum features. u2f and smartcard
-
-#### LUKS Enrollment 
-todo: enroll yubikey to luks slot
-
-#### PGP Key Management
-- key generation out of scope use: https://github.com/drduh/yubikey-guide
-todo: description f how to get pgp keys on the yubikey
-
-#### git commit signing
-todo: describe on how to use yubikey for commit signing
-
-### Password Management
-todo: we are using pass as the password manager of choice and integrate with the desktop environment and browsers
+--- 
 
 #### Commandline
 todo: how to store and retrieve passwords and how to utilize fzf for searching entries
