@@ -81,6 +81,41 @@ Note: Initial provisioning and key generation on the YubiKey itself are out of s
 ## User Directories
 Zenarchy does not mandate centralized user directory integration. Where identity delegation to centralized directory services (e.g., Microsoft Entra ID or Active Directory) is required, it must be declared within a dedicated `zenarchy-profile` module.
 
+# Privilege and Host Hardening
+
+## sudo and least privilege model
+
+Zenarchy enforces strict separation of privileges. Daily taks are executed under a unprivileged user account. Administrative escalation is handlet via `sudo`.  Sudo requires password and/or yubikey touch. sudo commands will be logged to an audit log.
+
+- **SYS.1.3.A2:** Restrictive account management and application of least-privilege administrative access controls.
+- **SYS.1.3.A12:** Audit and logging of privileged command execution.
+
+## Root account policy
+
+Direct interaction with the `root` account is disabled. The `root` password is locked to disable local passwor dlogins and ssh is configured with `PermitRootLogin No`).
+
+- **SYS.1.3.A1:** Hardening user authentication  by eliminating default root accounts.
+- **SYS.1.3.A7:** Disable root login over network
+
+## service minimaztion
+The package based approach of zenarchy allows finetuning of installed system daemons. Instead of a blanket approach we install only the relevant system daemons for the selected profile. In addition we stop sshd on laptop devices due to their higher exposure. User can enable it temporarily when needed.
+
+-- **SYS.1.3.A6:** Disabling unsecure protocols, unneeded background services and legacy daemons.
+
+## Host firewall baseline
+Zenarchy provides stateful host firewall with a default-deny ingress. Outgoing traffic is allowed and loopback interfaces are exempt. the only port we explicitly allow in zenarchy is Port 22
+
+-- **SYS.2.1.A31:** Implementation of local packet filtering with default-deny
+
+## idle lock
+User sessions are locked after a configured amount of time. this includes graphical environments like sway as well as headless shell sessions.
+
+-- **SYS.2.1.A1:** user session lock triggered by idle timeout
+
+## (optional) kernel, sysctl and mac hardening
+Due to the wide range of scenarios Zenarchy covers a generic hardening seems impossible. Instead we use a usecase based approach. Zenarchy profiles that require hardening implement it with the specific options inside their package.
+
+
 
 --- 
 
