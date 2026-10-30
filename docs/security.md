@@ -46,7 +46,7 @@ Zenarchy assumes that initial provisioning has secured the UEFI interface with a
 Initial provisioning establishes Full Disk Encryption (LUKS2) using a secure passphrase, which serves as the emergency backup unlock option. The primary daily unlocking mechanism for Zenarchy leverages the FIDO2 element of a YubiKey.
 
 Enrollment of the token into the LUKS header is performed via:
-```bash
+```
 sudo systemd-cryptenroll --fido2-device=auto /dev/sdaX
 ```
 
@@ -114,6 +114,48 @@ User sessions are locked after a configured amount of time. this includes graphi
 
 ## (optional) kernel, sysctl and mac hardening
 Due to the wide range of scenarios Zenarchy covers a generic hardening seems impossible. Instead we use a usecase based approach. Zenarchy profiles that require hardening implement it with the specific options inside their package.
+
+# Software Supply Chain and Updates
+
+## Pacman trust model and keyring
+
+Zenarchy relies on Arch Linux’s cryptographic trust model, governed by `pacman` and `pacman-key`. Official repository packages are digitally signed by developers using PGP keys. The local keyring is maintained and verified by the package `archlinux-keyring` to prevent package spoofing or man-in-the-middle attacks during downloads.
+
+- **OPS.1.1.3.A1:** Defining software sources and validating digital signatures
+- **CON.1.A3:** Ensuring secure, authenticated transport channels and cryptographic verification of downloaded assets.
+
+## AUR/paru risk model
+
+The Arch User Repository (AUR) contains community-submitted build scripts (`PKGBUILD`). Unlike official repositories, AUR packages are **not** officially vetted, signed, or audited by Arch Linux developers. Using `paru` to build and install AUR packages introduces a distinct supply chain risk: executing arbitrary build instructions and untrusted code on the host system.
+
+Zenarchy relies on several AUR packages to function. PKGBUILDs are vetted at time of inclusion into a zenarchy package but users are still responsible vor reviewing PKGBUILDs when using paru. Zenarchy is focused on system setup not day2day operations.
+
+- **OPS.1.1.3.A2:** Risk assessment and controlled approval processes for third-party or external software sources.
+
+## PKGBUILD reviews
+
+To mitigate AUR and external supply chain risks, Zenarchy recommends a mandatory code-review workflow prior to package compilation. Administrators or users must inspect the `PKGBUILD` and any associated `.install` scripts for malicious commands, suspicious network requests, or unauthorized binary downloads before running `paru -S`.
+
+- **OPS.1.1.3.A3:** Verification and safety testing of software packages before deployment into production environments.
+
+## Safe system upgrade strategy
+
+Because Arch Linux is a rolling-release distribution, partial upgrades are unsupported. Updating individual packages without syncing the entire repository breaks library compatibility and system stability. Zenarchy recommends full-system updates (`paru -Syu`) as a single operational transaction.
+
+Zenarchy recommends to update regularly and often and includes a waybar widget to inform the user of the number of packaged with outstanding updates.
+
+- **OPS.1.1.3.A4:** update and patch management
+
+## change and rollback approach
+
+If a package update introduces regressions or system instability, Zenarchy relies on local package caching and system recovery options:
+
+Package Downgrading: Utilizing local archives in `/var/cache/pacman/pkg/` and `~/.cache/paru/clone` to roll back specific packages to known-good states using `paru -U`.
+
+- **OPS.1.1.3.:** Safe Rollback / Change Management Maintaining rollback capabilities to recover from faulty updates or configuration changes.
+
+
+
 
 
 
