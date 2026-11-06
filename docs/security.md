@@ -24,7 +24,7 @@ Zenarchy assumes a pre-existing base installation of Arch Linux. Configuration t
 - A user account with administrative (`sudo`) privileges exists.
 - A Yubikey will be used for MFA.
 
-Zenarchy's primary goal is to **streamline initial system provisioning** to a hardened baseline, not to manage day-to-day device operations. Ongoing device management and configuration drift tracking are strictly out of scope.
+**Crucial Boundary:** Zenarchy's primary goal is to **streamline initial system provisioning and hardening**. It is a setup framework, not a Day-2 management platform. Ongoing device management, configuration drift tracking, and runtime monitoring are strictly out of scope; once provisioned, the system is maintained by the user.
 
 ## BSI Alignment
 This project aligns technical controls with the BSI IT-Grundschutz Compendium where applicable:
@@ -100,17 +100,17 @@ Direct interaction with the `root` account is disabled. The `root` password is l
 ## service minimaztion
 The package based approach of zenarchy allows finetuning of installed system daemons. Instead of a blanket approach we install only the relevant system daemons for the selected profile. In addition we stop sshd on laptop devices due to their higher exposure. User can enable it temporarily when needed.
 
--- **SYS.1.3.A6:** Disabling unsecure protocols, unneeded background services and legacy daemons.
+- **SYS.1.3.A6:** Disabling unsecure protocols, unneeded background services and legacy daemons.
 
 ## Host firewall baseline
 Zenarchy provides stateful host firewall with a default-deny ingress. Outgoing traffic is allowed and loopback interfaces are exempt. the only port we explicitly allow in zenarchy is Port 22
 
--- **SYS.2.1.A31:** Implementation of local packet filtering with default-deny
+- **SYS.2.1.A31:** Implementation of local packet filtering with default-deny
 
 ## idle lock
 User sessions are locked after a configured amount of time. this includes graphical environments like sway as well as headless shell sessions.
 
--- **SYS.2.1.A1:** user session lock triggered by idle timeout
+- **SYS.2.1.A1:** user session lock triggered by idle timeout
 
 ## (optional) kernel, sysctl and mac hardening
 Due to the wide range of scenarios Zenarchy covers a generic hardening seems impossible. Instead we use a usecase based approach. Zenarchy profiles that require hardening implement it with the specific options inside their package.
@@ -154,40 +154,78 @@ Package Downgrading: Utilizing local archives in `/var/cache/pacman/pkg/` and `~
 
 - **OPS.1.1.3.:** Safe Rollback / Change Management Maintaining rollback capabilities to recover from faulty updates or configuration changes.
 
+# Secrets and Data Protection
 
+## Password Manager Baseline (pass)
+Zenarchy provisions the standard Unix password manager (`pass`) as the default credential store. Secrets are managed inside a Git-backed directory structure (`~/.password-store/`) where every individual secret is stored as an independent file encrypted with OpenPGP.
 
+Primary keys and subkeys reside directly on the user's YubiKey (via OpenPGP smartcard applet), ensuring that raw decryption keys never hit local storage or system memory.
 
+- **CON.1.A1:** Establishment of unified, cryptographic secret management policies.
 
+- **CON.1.A2:** Key protection backed by hardware security elements.
 
---- 
+## CLI, Desktop, and Browser Integration
+To avoid manual decryption commands during daily operation, Zenarchy configures lightweight, native interfaces across all user layers:
 
-#### Commandline
-todo: how to store and retrieve passwords and how to utilize fzf for searching entries
+**Command Line (CLI):** Direct interaction via `pass` combined with `fzf` for fuzzy searching across credential paths and secret keys without rendering plaintext passwords to standard output.
 
-#### Desktop Environment
-todo: how to use tessen with fuzzel 
+**Desktop Environment (Wayland):** Selection and secret retrieval driven by `tessen` running inside `fuzzel`. This delivers a keyboard-driven application launcher experience under Sway, instantly querying pass and routing output directly to the Wayland selection buffer.
 
-#### Browser Integration
-todo: explain browserpass integration
+**Browser Integration:** Secure auto-fill supplied by `browserpass`, communicating directly with the native `pass` binary via a local messaging host interface. Browser extensions never store or cache master credentials directly.
 
-## Geeneral security features
+- **SYS.2.1.A37:** Secure, integrated secret retrieval workflows minimizing plaintext credential handling.
 
-### full disk encryption
-handled in base install
+## Secret Handling Rules
+Zenarchy deploys system-level configurations to mitigate credential leakage across memory, buffers, and shell environments:
 
-### yubikey integration
-physical mfa for boot
+**Clipboard Sanitization:** Integrations with `wl-clipboard` (via `pass -c` or `tessen`) automatically wipe clipboard buffers 45 seconds after copying sensitive data.
 
-### host firewall
-default deny for incoming
+**GnuPG Agent Caching:** gpg-agent cache TTLs (default-cache-ttl / max-cache-ttl) are set to short intervals, requiring hardware touch or PIN re-entry for secret operations past idle thresholds.
 
-### idle user logout
-automatic screenlock and systemlock if user is idle
+**Shell History Exclusions:** Shell environments omit space-prefixed execution commands (`HISTCONTROL=ignoreboth`) and set explicit patterns (`HISTIGNORE="*pass*"`) to prevent accidental secret logging.
 
-## todo: chapter title. dangers?
+- **ORP.4.A8:** Enforcement of rules governing plaintext password handling and temporary buffer isolation.
 
-### Supply Chain Attacks
-todo: we are utilizing paru. reference rcent overtake of aur packages by infostealers)
+# Network Security and Privacy
 
+## Network Exposure Defaults
+Zenarchy establishes a strict default-deny network posture across all host profiles. Inbound connection requests on external physical interfaces are dropped by default via `nftables` baseline rules. Stateful connection tracking permits outbound traffic and related response packets, while loopback interfaces (`lo`) remain explicitly isolated to local processes.
+
+- **SYS.2.1.A31:** Implementation of local packet filtering (firewall) with default-deny inbound rules.
+
+- **NET.1.1.A1:** Network segmentation and interface exposure minimization.
+
+## DNS Privacy and Resolver Choices
+To prevent cleartext DNS queries, domain hijacking, and ISP-level eavesdropping, Zenarchy configures local DNS resolution using DNS over TLS (DoT) or DNS over HTTPS (DoH) via `systemd-resolved`. Unencrypted port 53 traffic is blocked or redirected, and DNSSEC validation is enforced to guarantee response authenticity.
+
+- **CON.1.A3:** Cryptographic protection of network transport protocols and name resolution.
+
+- **NET.3.2.A12:** Secure DNS resolution and verification of response integrity.
+
+## VPN and Public Wi-Fi Guidance
+When connecting to untrusted or public network segments (e.g., public Wi-Fi), all non-local traffic should be routed through an encrypted tunnel (e.g., Tailscale, SSH, WireGuard or OpenVPN). Zenarchy provides pre-configured nftables kill-switch rules that drop all non-tunneled egress traffic should the VPN interface disconnect, preventing cleartext leaks.
+
+- **SYS.2.1.A33:** Protection of mobile clients on untrusted networks via encrypted VPN tunnels.
+
+- **CON.1.A4:** Transport security for remote data transfer.
+
+## Bluetooth and MAC Randomization Policy
+To mitigate tracking across wireless networks, Zenarchy enforces MAC address randomization for both Wi-Fi scan requests and active associations within NetworkManager or iwd. Wireless interfaces revert to randomized addresses on every reconnect. Bluetooth interfaces are disabled by default at boot via rfkill or systemd unit configuration, and must be explicitly enabled by the user when required.
+
+- **SYS.2.1.A11:** Minimizing wireless attack surfaces and mitigating physical tracking risks.
+
+## Remote Access Hardening (If Enabled)
+Remote access via SSH (sshd) is disabled by default on mobile profiles (laptops) and strictly hardened on server/workstation nodes when enabled:
+
+**Authentication:** Password authentication is completely disabled (`PasswordAuthentication no`); access is strictly restricted to hardware-backed SSH keys (YubiKey via OpenPGP / FIDO2 ed25519-sk).
+
+**Access Control:** Root logins are forbidden (`PermitRootLogin no`), and access is limited to specific local users (`AllowGroups`).
+
+**Cryptographic Suite:** Legacy ciphers and key exchange algorithms are disabled in favor of modern, secure primitives (KexAlgorithms, Ciphers, MACs).
+
+- **SYS.1.3.A7:** Secure configuration and cryptographic hardening of remote administration services.
+
+- **ORP.4.A21:** Multi-factor authentication for remote system access.
 
 
